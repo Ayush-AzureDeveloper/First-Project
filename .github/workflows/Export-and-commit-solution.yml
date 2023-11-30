@@ -1,0 +1,33 @@
+name: Export-and-commit-solution
+# Reusable workflow
+# Export solution from DEV environment
+#  unpack it and prepare, commit and push the changes
+
+on:
+  workflow_dispatch:
+
+    inputs:
+
+      # Change this value
+
+      environment:
+        type: choice
+        description: Environment
+        required: true
+        options:
+          - Development
+          
+      track_name:
+        type: choice
+        description: Track Name
+        required: true
+        options:
+          - Customer Support
+   
+      solution_name:
+        description: 'Solution Unique Name (Patch Id)'
+        required: true
+       
+      current_user_email:
+        description: 'Email Id of person doing Deployment'
+        required: true
