@@ -27,26 +27,7 @@ on:
       solution_name:
         description: 'Solution Unique Name (Patch Id)'
         required: true
-       
-      current_user_email:
-        description: 'Email Id of person doing Deployment'
-        required: true
-        
-      solution_exported_folder:
-        description: 'folder name for staging the exported solution *do not change*'
-        required: true
-        default: out/exported/
-        
-      solution_folder:
-        description: 'staging the unpacked solution folder before check-in *do not change*'
-        required: true
-        default: out/solutions/
-        
-      solution_target_folder: 
-       description: 'folder name to be created and checked in *do not change*'
-       required: true
-       default: solutions/
-       
+
 permissions:
   contents: write
 jobs:
@@ -70,4 +51,44 @@ jobs:
         app-id: ${{vars.CLIENT_ID}}
         client-secret: ${{ secrets.PowerPlatformSPN  }}
         tenant-id: ${{vars.TENANT_ID}}
+
+    - name: Publish Solution
+      uses: microsoft/powerplatform-actions/publish-solution@v1
+      with:
+        environment-url: ${{vars.ENVIRONMENT_URL}}
+        app-id: ${{vars.CLIENT_ID}}
+        client-secret: ${{ secrets.PowerPlatformSPN }}
+        tenant-id: ${{vars.TENANT_ID}}
+        max-async-wait-time: 60
+
+    - name: export-solution action
+      uses: microsoft/powerplatform-actions/export-solution@v1
+      with:
+        environment-url: ${{vars.ENVIRONMENT_URL}}
+        app-id: ${{vars.CLIENT_ID}}
+        client-secret: ${{ secrets.PowerPlatformSPN }}
+        tenant-id: ${{vars.TENANT_ID}}
+        solution-name: ${{ github.event.inputs.solution_name }}
+        solution-output-file: ${{ github.event.repository.name}}/${{ github.event.inputs.current_solution_version }}/${{ github.event.inputs.solution_name }}_unmanaged.zip
+        overwrite: true
+        max-async-wait-time: 60
+
+    - name: unpack-solution action
+      uses: microsoft/powerplatform-actions/unpack-solution@v1
+      with:
+        solution-file: ${{ github.event.repository.name}}/${{ github.event.inputs.solution_name }}_unmanaged.zip
+        solution-folder: ${{ github.event.repository.name}}/${{ github.event.inputs.solution_name }}
+        solution-type: 'Unmanaged'
+        overwrite-files: true
+    
+    - name: Git Fetch and Commit 
+      run: |
+        git fetch --all  
+        git config user.name "$(git log -n 1 --pretty=format:%an)"
+        git config user.email "$(git log -n 1 --pretty=format:%ae)"
+        git checkout Releases
+        git add --all 
+        git commit -m "Updates from the dev environment"
+        git push
+
         
