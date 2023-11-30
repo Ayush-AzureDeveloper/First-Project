@@ -52,14 +52,7 @@ jobs:
         client-secret: ${{ secrets.PowerPlatformSPN  }}
         tenant-id: ${{vars.TENANT_ID}}
 
-    - name: Publish Solution
-      uses: microsoft/powerplatform-actions/publish-solution@v1
-      with:
-        environment-url: ${{vars.ENVIRONMENT_URL}}
-        app-id: ${{vars.CLIENT_ID}}
-        client-secret: ${{ secrets.PowerPlatformSPN }}
-        tenant-id: ${{vars.TENANT_ID}}
-        max-async-wait-time: 60
+
 
     - name: export-solution action
       uses: microsoft/powerplatform-actions/export-solution@v1
