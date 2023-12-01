@@ -1,0 +1,76 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Import-solution-to-target-environment
+run-name: Deploy Solution ${{ inputs.solution_name }} to ${{ inputs.environment }} by @${{ github.actor }} from ${{ inputs.track_name }}
+# Controls when the workflow will run
+on:
+  workflow_dispatch:
+
+    inputs:
+    
+      environment:
+        type: choice
+        description: Environment
+        required: true
+        options:
+          - QA
+          - UAT
+          
+      track_name:
+        type: choice
+        description: Track Name
+        required: true
+        options:
+          - Customer Support
+   
+      solution_name:
+        description: 'Solution Unique Name (Patch Id)'
+        required: true
+
+permissions:
+
+  contents: write
+jobs:
+  import-from-dev:
+
+    runs-on: windows-latest
+    # or you can say runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    env:
+      GITHUB_BRANCH: ${{ github.ref }}
+      
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        lfs: true
+
+    - name: Power Platform Action Install
+      uses: microsoft/powerplatform-actions/actions-install@v1
+    
+    - name: Pack solution
+      uses: microsoft/powerplatform-actions/pack-solution@v1
+      with:
+        solution-folder: ${{ github.event.repository.name}}/${{ github.event.inputs.solution_name }}
+        solution-file: ${{ github.event.repository.name}}/${{ github.event.inputs.solution_name }}_unmanaged.zip
+        solution-type: Unmanaged
+
+    - name: Import solution as unmanaged to build env
+      uses: microsoft/powerplatform-actions/import-solution@v1
+      with:
+        environment-url: ${{vars.ENVIRONMENT_URL}}
+        app-id: ${{vars.CLIENT_ID}}
+        client-secret: ${{ secrets.PowerPlatformSPN }}
+        tenant-id: ${{vars.TENANT_ID}}
+        solution-file: ${{ github.event.repository.name}}/${{ github.event.inputs.solution_name }}_unmanaged.zip
+        force-overwrite: true
+        max-async-wait-time: 60
+        activate-plugins: true
+
+    - name: Publish Solution
+      uses: microsoft/powerplatform-actions/publish-solution@v1
+      with:
+        environment-url: ${{vars.ENVIRONMENT_URL}}
+        app-id: ${{vars.CLIENT_ID}}
+        client-secret: ${{ secrets.PowerPlatformSPN }}
+        tenant-id: ${{vars.TENANT_ID}}
+        max-async-wait-time: 60
