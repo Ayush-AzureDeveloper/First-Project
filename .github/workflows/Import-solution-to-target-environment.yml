@@ -57,7 +57,7 @@ jobs:
     - name: Import solution as unmanaged to build env
       uses: microsoft/powerplatform-actions/import-solution@v1
       with:
-        environment-url: ${{vars.ENVIRONMENT_URL}}
+        environment-url: ${{vars.QA_ENVIRONMENT_URL}}
         app-id: ${{vars.CLIENT_ID}}
         client-secret: ${{ secrets.PowerPlatformSPN }}
         tenant-id: ${{vars.TENANT_ID}}
@@ -69,7 +69,7 @@ jobs:
     - name: Publish Solution
       uses: microsoft/powerplatform-actions/publish-solution@v1
       with:
-        environment-url: ${{vars.ENVIRONMENT_URL}}
+        environment-url: ${{vars.QA_ENVIRONMENT_URL}}
         app-id: ${{vars.CLIENT_ID}}
         client-secret: ${{ secrets.PowerPlatformSPN }}
         tenant-id: ${{vars.TENANT_ID}}
